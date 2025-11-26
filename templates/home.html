@@ -1,0 +1,253 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+    <style>
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+        }
+        .search-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 30px;
+        }
+        .hotel-card {
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .hotel-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: #ffc107;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .btn-primary {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+            color: #000;
+        }
+        .badge.bg-primary {
+            background-color: #ffc107 !important;
+            color: #000;
+        }
+        .text-primary {
+            color: #ffc107 !important;
+        }
+    </style>
+
+<main>
+    <!-- Герой секция с поиском -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Найдите идеальное место для отдыха</h1>
+                    <p class="lead mb-4">Более 2 миллионов отелей по всему миру. Лучшие цены гарантированы.</p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="search-card">
+                        <form>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="destination" class="text-secondary form-label">Направление</label>
+                                    <input type="text" class="form-control" id="destination" placeholder="Куда вы хотите поехать?">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="check-in" class="text-secondary form-label">Заезд</label>
+                                    <input type="date" class="form-control" id="check-in">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="check-out" class="text-secondary form-label">Выезд</label>
+                                    <input type="date" class="form-control" id="check-out">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="guests" class="text-secondary form-label">Гости</label>
+                                    <select class="form-select" id="guests">
+                                        <option>1 гость</option>
+                                        <option>2 гостя</option>
+                                        <option>3 гостя</option>
+                                        <option>4+ гостей</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="rooms" class="text-secondary form-label">Комнаты</label>
+                                    <select class="form-select" id="rooms">
+                                        <option>1 комната</option>
+                                        <option>2 комнаты</option>
+                                        <option>3 комнаты</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">Найти отели</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Популярные направления -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Популярные направления</h2>
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="card-img-top" alt="Москва">
+                        <div class="card-body">
+                            <h5 class="card-title">Москва</h5>
+                            <p class="card-text text-muted">От 3 500 ₽/ночь</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1549144511-f099e773c147?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="card-img-top" alt="Санкт-Петербург">
+                        <div class="card-body">
+                            <h5 class="card-title">Санкт-Петербург</h5>
+                            <p class="card-text text-muted">От 2 800 ₽/ночь</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1596484552994-4daea0a9d9b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="card-img-top" alt="Сочи">
+                        <div class="card-body">
+                            <h5 class="card-title">Сочи</h5>
+                            <p class="card-text text-muted">От 4 200 ₽/ночь</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1548013146-72479768bada?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="card-img-top" alt="Калининград">
+                        <div class="card-body">
+                            <h5 class="card-title">Калининград</h5>
+                            <p class="card-text text-muted">От 2 600 ₽/ночь</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Преимущества -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Почему выбирают нас?</h2>
+            <div class="row text-center">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-icon mx-auto">
+                        <svg width="30" height="30" fill="white" viewBox="0 0 16 16">
+                            <path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5z"/>
+                            <path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                        </svg>
+                    </div>
+                    <h4>Лучшая цена</h4>
+                    <p class="text-muted">Гарантия лучшей цены или возвращаем разницу</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-icon mx-auto">
+                        <svg width="30" height="30" fill="white" viewBox="0 0 16 16">
+                            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+                        </svg>
+                    </div>
+                    <h4>Поддержка 24/7</h4>
+                    <p class="text-muted">Круглосуточная поддержка на русском языке</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-icon mx-auto">
+                        <svg width="30" height="30" fill="white" viewBox="0 0 16 16">
+                            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/>
+                        </svg>
+                    </div>
+                    <h4>Мгновенное подтверждение</h4>
+                    <p class="text-muted">Мгновенное подтверждение бронирования</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Спецпредложения -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Спецпредложения</h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card hotel-card border-0 shadow-sm">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="Отель Премиум">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">Отель Премиум</h5>
+                                    <p class="card-text"><small class="text-muted">Москва, центр</small></p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-success">★ 4.8</span>
+                                        <span class="badge bg-warning">-25%</span>
+                                    </div>
+                                    <p class="card-text">Роскошный отель в центре города с видом на Кремль</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <s class="text-muted">8 000 ₽</s>
+                                            <span class="h5 text-danger ms-2">6 000 ₽</span>
+                                            <small class="text-muted">/ночь</small>
+                                        </div>
+                                        <button class="btn btn-primary btn-sm">Забронировать</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card hotel-card border-0 shadow-sm">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="Бизнес Отель">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">Бизнес Отель</h5>
+                                    <p class="card-text"><small class="text-muted">Санкт-Петербург</small></p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-success">★ 4.6</span>
+                                        <span class="badge bg-primary">Бесплатная отмена</span>
+                                    </div>
+                                    <p class="card-text">Идеально для деловых поездок. Бесплатный Wi-Fi и завтрак</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="h5 text-primary">4 200 ₽</span>
+                                            <small class="text-muted">/ночь</small>
+                                        </div>
+                                        <button class="btn btn-primary btn-sm">Забронировать</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

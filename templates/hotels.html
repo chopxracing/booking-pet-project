@@ -1,0 +1,263 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <style>
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .hotel-card {
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .rating-badge {
+            background: #198754;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .amenity-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+
+        .map-container {
+            height: 400px;
+            background: #e9ecef;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+            color: #000;
+        }
+
+        .badge.bg-primary {
+            background-color: #ffc107 !important;
+            color: #000;
+        }
+
+        .text-primary {
+            color: #ffc107 !important;
+        }
+
+        .btn-outline-primary {
+            color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+
+        .hotel-img-container {
+            /* ⭐️ ФИКСИРОВАННАЯ ВЫСОТА: Выберите удобное значение */
+            height: 250px;
+            /* Обрезает края, если изображение выходит за рамки */
+            overflow: hidden;
+            /* Обеспечивает применение border-radius к контейнеру */
+            border-top-left-radius: 0.25rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        /* Убедитесь, что само изображение занимает весь контейнер */
+        .hotel-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+    <main class="py-4">
+        <div class="container">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+                    <li class="breadcrumb-item active">Отели</li>
+                </ol>
+            </nav>
+
+            <div class="row">
+                <!-- Сайдбар с фильтрами -->
+                <div class="col-lg-3">
+                    <form method="get" action="{% url 'hotels' %}">
+                        <div class="filter-section sticky-top" style="top: 20px;">
+                            <h5 class="mb-4">Фильтры поиска</h5>
+
+                            <!-- Поиск по названию -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Название отеля</label>
+                                <input type="text" name="name" class="form-control"
+                                       value="{{ current_filters.name }}" placeholder="Введите название...">
+                            </div>
+
+                            <!-- Поиск по городу -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Город</label>
+                                <input type="text" name="city" class="form-control"
+                                       value="{{ current_filters.city }}" placeholder="Введите город...">
+                            </div>
+
+                            <!-- Звезды -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Количество звезд</label>
+                                <select name="stars" class="form-select">
+                                    <option value="">Все звезды</option>
+                                    <option value="1" {% if current_filters.stars == "1" %}selected{% endif %}>1
+                                        звезда
+                                    </option>
+                                    <option value="2" {% if current_filters.stars == "2" %}selected{% endif %}>2
+                                        звезды
+                                    </option>
+                                    <option value="3" {% if current_filters.stars == "3" %}selected{% endif %}>3
+                                        звезды
+                                    </option>
+                                    <option value="4" {% if current_filters.stars == "4" %}selected{% endif %}>4
+                                        звезды
+                                    </option>
+                                    <option value="5" {% if current_filters.stars == "5" %}selected{% endif %}>5 звезд
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Цена -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Цена за ночь</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="number" name="min_price" class="form-control"
+                                               value="{{ current_filters.min_price }}" placeholder="От" min="0">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="number" name="max_price" class="form-control"
+                                               value="{{ current_filters.max_price }}" placeholder="До" min="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Скрытые поля для сохранения сортировки -->
+                            <input type="hidden" name="sort" value="{{ current_filters.sort }}">
+
+                            <button type="submit" class="btn btn-primary w-100 mb-2">Применить фильтры</button>
+                            <a href="{% url 'hotels' %}" class="btn btn-outline-secondary w-100">Сбросить все</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Основной контент -->
+                <div class="col-lg-9">
+                    <!-- Заголовок и сортировка -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Отели в Москве</h2>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
+                                Сортировка: По рейтингу
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">По рейтингу</a></li>
+                                <li><a class="dropdown-item" href="#">По цене (сначала дешевые)</a></li>
+                                <li><a class="dropdown-item" href="#">По цене (сначала дорогие)</a></li>
+                                <li><a class="dropdown-item" href="#">По отзывам</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Карточки отелей -->
+                    {% for hotel in hotels %}
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <div class="card hotel-card border-0 shadow-sm">
+
+                                    <div class="row g-0">
+
+                                        <div class="col-md-4 hotel-img-container">
+                                            {% with photo=hotel.primary_photo %}
+                                                {% if photo %}
+                                                    <img src="{{ photo.file.url }}"
+                                                         class="img-fluid rounded-start h-100"
+                                                         style="object-fit: cover;"
+                                                         alt="{{ hotel.name }}">
+                                                {% else %}
+                                                    <div class="bg-light d-flex align-items-center justify-content-center h-100 rounded-start"
+                                                         style="height: 250px; width: 100%;">
+                                                        <p class="text-muted">Нет фото</p>
+                                                    </div>
+                                                {% endif %}
+                                            {% endwith %}
+                                        </div>
+
+                                        <div class="col-md-8">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h5 class="card-title">{{ hotel.name }}</h5>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <div class="rating-badge">9.2</div>
+                                                        <div class="text-muted small mt-1">1247 отзывов</div>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <div>
+                                                        <div class="price-tag">от {{ min_price.price }} руб.</div>
+                                                        <small class="text-muted">за ночь</small>
+                                                    </div>
+                                                    <a href=" {% url 'hotel' hotel.id %}" class="btn btn-primary">Забронировать</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Пагинация -->
+                    <nav aria-label="Page navigation" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">Назад</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Вперед</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}

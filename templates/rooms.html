@@ -1,0 +1,550 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <style>
+        .client-section {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            min-height: 100vh;
+            padding: 80px 0 40px;
+        }
+
+        .client-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .room-card:hover {
+            border-color: #ffc107;
+            transform: translateY(-5px);
+        }
+
+        .btn-primary {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+            color: #000;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 12px 25px;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #ffc107;
+            border-bottom: 3px solid #ffc107;
+            background: transparent;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            border-color: #ffc107;
+            transform: translateY(-5px);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffc107;
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .amenity-badge {
+            background: #ffc107;
+            color: #000;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+        }
+
+        .room-image {
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+    </style>
+
+    <section class="client-section">
+        <div class="container">
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                             role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Заголовок и кнопка добавления -->
+            <div class="client-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-5 fw-bold mb-3">Управление номерами</h1>
+                        <p class="lead text-muted">Отель: {{ hotel.name }}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal"
+                                data-bs-target="#addRoomModal">
+                            <svg width="20" height="20" fill="currentColor" class="me-2">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            Добавить номер
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ rooms.count }}</div>
+                        <div class="stats-label">Всего номеров</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ active_rooms }}</div>
+                        <div class="stats-label">Активных</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ booked_rooms }}</div>
+                        <div class="stats-label">Забронировано</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ total_revenue }} ₽</div>
+                        <div class="stats-label">Доход за месяц</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Список номеров -->
+            <div class="client-card">
+
+
+                {% if rooms %}
+                    {% for room in rooms %}
+                        <div class="room-card">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    {% if room.image %}
+                                        <img src="{{ room.image.url }}" class="img-fluid room-image w-100"
+                                             alt="{{ room.name }}">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center room-image w-100">
+                                            <small class="text-muted">Нет фото</small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="mb-1">{{ room.name }}</h5>
+                                    <p class="text-muted mb-2">{{ room.description|default:"Описание номера" }}</p>
+                                    <div class="mb-2">
+                                    <span class="badge bg-light text-dark me-2">
+                                        <svg width="16" height="16" fill="currentColor" class="me-1">
+                                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                        </svg>
+                                        {{ room.max_people }} гостей
+                                    </span>
+                                        <span class="badge bg-light text-dark me-2">
+                                        <svg width="16" height="16" fill="currentColor" class="me-1">
+                                            <path d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9zM2 4v8h12V4H2z"/>
+                                        </svg>
+                                        {{ room.area|default:"25" }} м²
+                                    </span>
+                                    </div>
+                                    <div class="mb-2">
+                                        {% for comfort in room.comforts.all|slice:":3" %}
+                                            <span class="amenity-badge">{{ comfort.name }}</span>
+                                        {% endfor %}
+                                        {% if room.comforts.all.count > 3 %}
+                                            <span class="badge bg-light text-dark">+{{ room.comforts.all.count|add:"-3" }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                    <span class="status-badge {% if room.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                        {% if room.is_active %}Активен{% else %}Неактивен{% endif %}
+                                    </span>
+                                        <span class="badge bg-info text-dark">
+                                        {{ room.bookings_count }} бронирований
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <div class="price-tag">{{ room.price }} ₽</div>
+                                    <small class="text-muted">за ночь</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'room_detail' room.id %}"
+                                           class="btn btn-outline-primary btn-sm">
+                                            Редактировать
+                                        </a>
+                                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#roomStatsModal-{{ room.id }}">
+                                            Статистика
+                                        </button>
+                                        <form method="post" action="" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit"
+                                                    class="btn btn-sm {% if room.is_active %}btn-warning{% else %}btn-success{% endif %} w-100">
+                                                {% if room.is_active %}Деактивировать{% else %}Активировать{% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Модальное окно редактирования номера -->
+                        <div class="modal fade" id="editRoomModal-{{ room.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Редактирование номера</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="post" action="" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Название номера *</label>
+                                                    <input type="text" class="form-control" name="name"
+                                                           value="{{ room.name }}" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Цена за ночь (₽) *</label>
+                                                    <input type="number" class="form-control" name="price"
+                                                           value="{{ room.price }}" required>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">Описание</label>
+                                                    <textarea class="form-control" name="description"
+                                                              rows="3">{{ room.description }}</textarea>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Макс. гостей *</label>
+                                                    <input type="number" class="form-control" name="max_people"
+                                                           value="{{ room.max_people }}" required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Площадь (м²)</label>
+                                                    <input type="number" class="form-control" name="area"
+                                                           value="{{ room.area }}">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Тип кровати</label>
+                                                    <select class="form-select" name="bed_type">
+                                                        <option value="single"
+                                                                {% if room.bed_type == 'single' %}selected{% endif %}>
+                                                            Односпальная
+                                                        </option>
+                                                        <option value="double"
+                                                                {% if room.bed_type == 'double' %}selected{% endif %}>
+                                                            Двуспальная
+                                                        </option>
+                                                        <option value="twin"
+                                                                {% if room.bed_type == 'twin' %}selected{% endif %}>Две
+                                                            односпальные
+                                                        </option>
+                                                        <option value="king"
+                                                                {% if room.bed_type == 'king' %}selected{% endif %}>
+                                                            Кинг-сайз
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">Изображение номера</label>
+                                                    <input type="file" class="form-control" name="image"
+                                                           accept="image/*">
+                                                    {% if room.image %}
+                                                        <div class="mt-2">
+                                                            <small>Текущее изображение:</small>
+                                                            <img src="{{ room.image.url }}" class="img-thumbnail mt-1"
+                                                                 style="height: 100px;">
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">Удобства</label>
+                                                    <div class="row">
+                                                        {% for comfort in all_comforts %}
+                                                            <div class="col-md-4 mb-2">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox"
+                                                                           name="comforts"
+                                                                           value="{{ comfort.id }}"
+                                                                           {% if comfort in room.comforts.all %}checked{% endif %}>
+                                                                    <label class="form-check-label">{{ comfort.name }}</label>
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Отмена
+                                            </button>
+                                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Модальное окно статистики номера -->
+                        <div class="modal fade" id="roomStatsModal-{{ room.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Статистика номера "{{ room.name }}"</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row text-center">
+                                            <div class="col-6 mb-3">
+                                                <div class="stats-number">{{ room.bookings_count }}</div>
+                                                <div class="stats-label">Всего бронирований</div>
+                                            </div>
+                                            <div class="col-6 mb-3">
+                                                <div class="stats-number">{{ room.occupancy_rate }}%</div>
+                                                <div class="stats-label">Заполняемость</div>
+                                            </div>
+                                            <div class="col-6 mb-3">
+                                                <div class="stats-number">{{ room.monthly_revenue }} ₽</div>
+                                                <div class="stats-label">Доход за месяц</div>
+                                            </div>
+                                            <div class="col-6 mb-3">
+                                                <div class="stats-number">{{ room.average_rating|default:"-" }}</div>
+                                                <div class="stats-label">Средний рейтинг</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <h6>Последние бронирования:</h6>
+                                            {% for booking in room.recent_bookings %}
+                                                <div class="d-flex justify-content-between border-bottom py-2">
+                                                    <span>{{ booking.guest_name }}</span>
+                                                    <span>{{ booking.check_in }} - {{ booking.check_out }}</span>
+                                                </div>
+                                            {% empty %}
+                                                <p class="text-muted">Нет бронирований</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <svg width="64" height="64" fill="#6c757d" viewBox="0 0 16 16">
+                            <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.5 5a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5z"/>
+                        </svg>
+                        <h4 class="mt-3 text-muted">Номера не добавлены</h4>
+                        <p class="text-muted">Добавьте первый номер для вашего отеля</p>
+                        <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+                            Добавить номер
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Модальное окно добавления номера -->
+        <div class="modal fade" id="addRoomModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <svg width="24" height="24" fill="#ffc107" class="me-2">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            Добавить новый номер
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="post" action="{% url 'client_add_room' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label for="roomName" class="form-label">Название номера *</label>
+                                    <input type="text" class="form-control" id="roomName" name="name" required
+                                           placeholder="Например: Стандарт двухместный">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="roomPrice" class="form-label">Цена за ночь (₽) *</label>
+                                    <input type="number" class="form-control" id="roomPrice" name="price" required
+                                           placeholder="3000" step="0.01">
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="roomDescription" class="form-label">Описание</label>
+                                    <textarea class="form-control" id="roomDescription" name="description" rows="3"
+                                              placeholder="Опишите особенности номера..."></textarea>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="maxPeople" class="form-label">Максимум гостей *</label>
+                                    <input type="number" class="form-control" id="maxPeople" name="max_people" required
+                                           min="1"
+                                           max="10" value="2">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="maxPeople" class="form-label">Количество комнат</label>
+                                    <input type="number" class="form-control" id="rooms" name="rooms" required
+                                           min="1"
+                                           max="10" value="1">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="freeCount" class="form-label">Количество номеров *</label>
+                                    <input type="number" class="form-control" id="freeCount" name="free_count" required
+                                           min="1"
+                                           max="1000" value="2">
+                                </div>
+
+                                <input type="hidden" name="hotel_id" value="{{ hotel.id }}">
+
+                                <div class="col-12">
+                                    <label class="form-label mt-3">Удобства номера</label>
+                                    <div class="row">
+                                        {% for comfort in all_comforts %}
+                                            <div class="col-md-4 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="comforts"
+                                                           value="{{ comfort.id }}" id="comfort-{{ comfort.id }}">
+                                                    <label class="form-check-label"
+                                                           for="comfort-{{ comfort.id }}">{{ comfort.name }}</label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-primary">Добавить номер</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Активация вкладок
+        const triggerTabList = [].slice.call(document.querySelectorAll('#clientTabs button'))
+        triggerTabList.forEach(function (triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        })
+
+        // Обработка форм
+        document.addEventListener('DOMContentLoaded', function () {
+            // Валидация формы добавления номера
+            const addRoomForm = document.querySelector('#addRoomModal form');
+            if (addRoomForm) {
+                addRoomForm.addEventListener('submit', function (e) {
+                    const price = this.querySelector('input[name="price"]').value;
+                    if (price < 100) {
+                        e.preventDefault();
+                        alert('Цена должна быть не менее 100 рублей');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

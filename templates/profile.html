@@ -1,0 +1,449 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <style>
+        .profile-section {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            min-height: 100vh;
+            padding: 80px 0 40px;
+        }
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffc107;
+        }
+        .avatar-edit {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 36px;
+            height: 36px;
+            background: #ffc107;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            cursor: pointer;
+        }
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            border-color: #ffc107;
+            transform: translateY(-5px);
+        }
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffc107;
+            margin-bottom: 5px;
+        }
+        .stats-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .booking-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .booking-card:hover {
+            border-color: #ffc107;
+            transform: translateY(-2px);
+        }
+        .booking-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-completed { background: #d1ecf1; color: #0c5460; }
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 12px 25px;
+        }
+        .nav-tabs .nav-link.active {
+            color: #ffc107;
+            border-bottom: 3px solid #ffc107;
+            background: transparent;
+        }
+        .btn-primary {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+            color: #000;
+            transform: translateY(-2px);
+        }
+        .btn-outline-primary {
+            color: #ffc107;
+            border-color: #ffc107;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 500;
+        }
+        .btn-outline-primary:hover {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+        }
+        .badge-primary {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+        }
+        .progress-bar {
+            background: #ffc107;
+            border-radius: 4px;
+        }
+        .favorite-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .favorite-card:hover {
+            border-color: #ffc107;
+            transform: translateY(-2px);
+        }
+        .review-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #f8f9fa;
+        }
+        .star-rating {
+            color: #ffc107;
+        }
+    </style>
+
+    <section class="profile-section">
+        <div class="container">
+            <!-- Заголовок профиля -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <h1 class="h2 mb-2">{{ user.first_name }} {{ user.last_name }}</h1>
+                    <p class="text-muted mb-3">Участник с {{ user.date_joined|date:"d.m.Y" }}</p>
+                    <div class="d-flex justify-content-center gap-3">
+                    </div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number">{{ active_bookings.count }}</div>
+                            <div class="stats-label">Бронирований</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number">{{ inactive_bookings.count }}</div>
+                            <div class="stats-label">Завершено</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number">{{ bookingfavorites.count }}</div>
+                            <div class="stats-label">В планах</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number">
+                                {% if bookinghistory %}
+                                    {{ bookinghistory.price.count }} руб.
+                                {% else %}
+                                    0 руб.
+                                {% endif %}
+                            </div>
+                            <div class="stats-label">Потрачено</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Навигация -->
+            <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings" type="button" role="tab">
+                        📋 Мои бронирования
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites" type="button" role="tab">
+                        ⭐ Избранное
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+                        💬 Мои отзывы
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">
+                        👤 Настройки профиля
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                        🔐 Безопасность
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Содержимое вкладок -->
+            <div class="tab-content" id="profileTabsContent">
+                <!-- Вкладка бронирований -->
+                <div class="tab-pane fade show active" id="bookings" role="tabpanel">
+                    <div class="profile-card">
+                        <h3 class="mb-4">Активные бронирования</h3>
+                        
+                        <!-- Бронирование 1 -->
+                        <div class="booking-card">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" 
+                                         alt="Отель" class="img-fluid rounded" style="height: 80px; object-fit: cover;">
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="mb-1">Премиум Отель Москва</h5>
+                                    <p class="text-muted mb-1">Москва, Центр</p>
+                                    <p class="mb-1"><small>15 янв - 20 янв 2024 • 2 гостя</small></p>
+                                    <div class="d-flex gap-2">
+                                        <span class="booking-status status-confirmed">Подтверждено</span>
+                                        <span class="badge bg-primary">Оплачено</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <div class="h5 text-success">8 400 ₽</div>
+                                    <small class="text-muted">за 5 ночей</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-secondary btn-sm w-100">Отменить</button>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <h4 class="mt-5 mb-4">История бронирований</h4>
+
+                        <!-- Завершенное бронирование -->
+                        <div class="booking-card">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" 
+                                         alt="Отель" class="img-fluid rounded" style="height: 80px; object-fit: cover;">
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="mb-1">Эконом Отель Комфорт</h5>
+                                    <p class="text-muted mb-1">Москва, Октябрьское поле</p>
+                                    <p class="mb-1"><small>10 дек - 12 дек 2023 • 2 гостя</small></p>
+                                    <div class="d-flex gap-2">
+                                        <span class="booking-status status-completed">Завершено</span>
+                                        <span class="badge bg-success">Оплачено</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <div class="h5 text-muted">6 200 ₽</div>
+                                    <small class="text-muted">за 2 ночи</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-success btn-sm w-100">Оставить отзыв</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка избранного -->
+                <div class="tab-pane fade" id="favorites" role="tabpanel">
+                    <div class="profile-card">
+                        <h3 class="mb-4">Избранные отели</h3>
+                        
+                        <div class="row">
+                            <!-- Отель 1 -->
+                            <div class="col-md-6 mb-4">
+                                <div class="favorite-card">
+                                    <div class="row g-3">
+                                        <div class="col-4">
+                                            <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
+                                                 alt="Отель" class="img-fluid rounded" style="height: 100px; object-fit: cover;">
+                                        </div>
+                                        <div class="col-8">
+                                            <h5 class="mb-1">Премиум Отель Москва</h5>
+                                            <p class="text-muted mb-2">Москва, Центр</p>
+                                            <div class="mb-2">
+                                                <span class="badge bg-light text-dark me-1">★★★★★</span>
+                                                <span class="text-warning">9.2</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="h5 text-success mb-0">8 400 ₽</div>
+                                                <button class="btn btn-primary btn-sm">Забронировать</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="{% url 'hotels' %}" class="btn btn-outline-primary">Найти больше отелей</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка отзывов -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    <div class="profile-card">
+                        <h3 class="mb-4">Мои отзывы</h3>
+
+                        <!-- Отзыв 2 -->
+                        <div class="review-card">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="mb-1">Эконом Отель Комфорт</h5>
+                                    <p class="text-muted mb-0">Москва, Октябрьское поле</p>
+                                </div>
+                                <div class="text-end">
+                                    <div class="star-rating">
+                                        ★★★☆☆
+                                    </div>
+                                    <small class="text-muted">13 декабря 2023</small>
+                                </div>
+                            </div>
+                            <p class="mb-3">Неплохой отель за свои деньги. Чисто, но мебель немного устаревшая. Wi-Fi работал хорошо. Для короткой поездки подходит.</p>
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-primary">Цена/качество</span>
+                                <span class="badge bg-primary">Wi-Fi</span>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button class="btn btn-primary">Оставить новый отзыв</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка настроек профиля -->
+                <div class="tab-pane fade" id="profile" role="tabpanel">
+                    <div class="profile-card">
+                        <h3 class="mb-4">Настройки профиля</h3>
+                        <form>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Имя</label>
+                                    <input type="text" class="form-control" value="{{ user.first_name }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Фамилия</label>
+                                    <input type="text" class="form-control" value="{{ user.last_name }}">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ user.email }}">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Вкладка безопасности -->
+                <div class="tab-pane fade" id="security" role="tabpanel">
+                    <div class="profile-card">
+                        <h3 class="mb-4">Безопасность</h3>
+                        
+                        <div class="mb-4">
+                            <h5>Смена пароля</h5>
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Текущий пароль</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Новый пароль</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Подтвердите новый пароль</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Обновить пароль</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Активация вкладок
+        const triggerTabList = [].slice.call(document.querySelectorAll('#profileTabs button'))
+        triggerTabList.forEach(function (triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        })
+    </script>
+{% endblock %}

@@ -1,0 +1,442 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <style>
+        .room-section {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            min-height: 100vh;
+            padding: 80px 0 40px;
+        }
+
+        .room-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .room-gallery {
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .room-gallery img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .room-gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .thumbnail-gallery {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail.active {
+            border-color: #ffc107;
+        }
+
+        .amenity-badge {
+            background: #ffc107;
+            color: #000;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .price-tag {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            color: #ffc107;
+        }
+
+        .booking-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-primary {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .detail-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .trust-badge {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .trust-badge i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        #hotelCarousel {
+            width: 800px !important; /* Устанавливаем вашу ширину */
+            height: 450px !important; /* Устанавливаем фиксированную высоту */
+            overflow: hidden;
+        }
+
+        /* 2. ПРИНУЖДАЕМ ВСЕ ВНУТРЕННИЕ КОНТЕЙНЕРЫ ЗАНЯТЬ 100% ВЫСОТЫ */
+        #hotelCarousel .carousel-inner,
+        #hotelCarousel .carousel-item {
+            width: 100% !important;
+            height: 100% !important; /* КЛЮЧЕВОЙ МОМЕНТ */
+            /* Добавляем фон, чтобы скрыть любые возможные пробелы, если изображение не заполняется идеально */
+            background-color: #000;
+        }
+
+        /* 3. ПРИНУЖДАЕМ ИЗОБРАЖЕНИЕ К ЗАПОЛНЕНИЮ И ОБРЕЗКЕ */
+        #hotelCarousel img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important; /* ГАРАНТИРУЕМ ОБРЕЗКУ */
+        }
+    </style>
+
+    <section class="room-section">
+        <div class="container">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'hotels' %}">Отели</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'hotel' hotel.id %}">{{ hotel.name }}</a></li>
+                    <li class="breadcrumb-item active">{{ room.name }}</li>
+                </ol>
+            </nav>
+
+            <div class="room-card">
+                <div class="row">
+                    <!-- Левая колонка - информация о номере -->
+                    <div class="col-lg-8">
+                        <!-- Галерея -->
+                            <div id="hotelCarousel" class="carousel slide carousel-fixed-height" data-bs-ride="carousel">
+
+                            <div class="carousel-indicators">
+                                <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="0"
+                                        class="active" aria-current="true" aria-label="Slide 1"></button>
+
+                                {% for file in files %}
+                                    <button type="button" data-bs-target="#hotelCarousel"
+                                            data-bs-slide-to="{{ forloop.counter }}"
+                                            aria-label="Slide {{ forloop.counter|add:1 }}"></button>
+                                {% endfor %}
+                            </div>
+
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="{{ room.primary_photo.file.url }}"
+                                         class="d-block"
+                                         loading="eager"
+                                         alt="{{ room.name }} - Основное фото">
+                                </div>
+
+                                {% for file in files %}
+                                    <div class="carousel-item">
+                                        <img src="{{ file.file.url }}"
+                                             class="d-block"
+                                             loading="lazy"
+                                             alt="{{ room.name }} - Фото {{ forloop.counter|add:1 }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <button class="carousel-control-prev" type="button" data-bs-target="#hotelCarousel"
+                                    data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#hotelCarousel"
+                                    data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+
+                        <!-- Основная информация -->
+                        <h1 class="mt-4 mb-3">{{ room.name }}</h1>
+                        <p class="lead text-muted mb-4">{{ room.description|default:"Просторный и комфортабельный номер с современным дизайном" }}</p>
+
+                        <!-- Характеристики -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Характеристики номера</h5>
+                                <div class="feature-item">
+                                    <svg class="feature-icon" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                    </svg>
+                                    <span><strong>Вместимость:</strong> до {{ room.max_people|default:"2" }} гостей</span>
+                                </div>
+                                <div class="feature-item">
+                                    <svg class="feature-icon" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9zM2 4v8h12V4H2z"/>
+                                    </svg>
+                                    <span><strong>Площадь:</strong> {{ room.area|default:"25" }} м²</span>
+                                </div>
+                                <div class="feature-item">
+                                    <svg class="feature-icon" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2z"/>
+                                        <path d="M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                    </svg>
+                                    <span><strong>Тип кровати:</strong> {{ room.bed_type|default:"Двуспальная" }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Удобства</h5>
+                                <div>
+                                    {% for comfort in room.comforts.all %}
+                                        <span class="amenity-badge">{{ comfort.name }}</span>
+                                    {% empty %}
+                                        <span class="amenity-badge">Кондиционер</span>
+                                        <span class="amenity-badge">Wi-Fi</span>
+                                        <span class="amenity-badge">Телевизор</span>
+                                        <span class="amenity-badge">Мини-бар</span>
+                                        <span class="amenity-badge">Сейф</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Детальное описание -->
+                        <div class="mb-4">
+                            <h5>Подробное описание</h5>
+                            <p class="text-muted">
+                                {{ room.description|default:"Не указано" }}
+                            </p>
+                        </div>
+
+                        <!-- Правила отеля -->
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">💡 Важная информация</h6>
+                                <ul class="mb-0 small">
+                                    <li>Заезд: с 14:00, выезд: до 12:00</li>
+                                    <li>Бесплатная отмена за 48 часов до заезда</li>
+                                    <li>Размещение с животными: по запросу</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка - бронирование -->
+                    <div class="col-lg-4">
+                        <div class="sticky-top" style="top: 20px;">
+                            <div class="booking-card">
+                                <h4 class="text-center mb-4">Забронировать номер</h4>
+
+                                <div class="text-center mb-4">
+                                    <div class="price-tag">{{ room.price }} ₽</div>
+                                    <small class="text-muted">за ночь</small>
+                                </div>
+
+                                <form method="post" action="" id="bookingForm">
+                                    {% csrf_token %}
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Даты проживания</label>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <input type="date" class="form-control" name="check_in" id="checkIn"
+                                                       required>
+                                                <small class="form-text text-muted">Заезд</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="date" class="form-control" name="check_out" id="checkOut"
+                                                       required>
+                                                <small class="form-text text-muted">Выезд</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Гости</label>
+                                        <select class="form-select" name="guests" required>
+                                            <option value="1">1 взрослый</option>
+                                            <option value="2" selected>2 взрослых</option>
+                                            <option value="3">2 взрослых + 1 ребенок</option>
+                                            <option value="4">2 взрослых + 2 ребенка</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Количество номеров</label>
+                                        <select class="form-select" name="rooms_count" required>
+                                            <option value="1" selected>1 номер</option>
+                                            <option value="2">2 номера</option>
+                                            <option value="3">3 номера</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Итоговая стоимость -->
+                                    <div class="alert alert-light border-0 mb-4">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Стоимость за 2 ночи:</span>
+                                            <strong>6 000 ₽</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Сервисный сбор:</span>
+                                            <strong>300 ₽</strong>
+                                        </div>
+                                        <hr class="my-2">
+                                        <div class="d-flex justify-content-between fw-bold fs-5">
+                                            <span>Итого:</span>
+                                            <strong class="text-success">6 300 ₽</strong>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            <i class="bi bi-info-circle"></i> Бесплатная отмена до 48 часов до заезда
+                                        </small>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                        <svg width="20" height="20" fill="currentColor" class="me-2">
+                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H2z"/>
+                                            <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
+                                        </svg>
+                                        Забронировать сейчас
+                                    </button>
+                                </form>
+
+                                <!-- Доверительные знаки -->
+                                <div class="row text-center mt-4">
+                                    <div class="col-4">
+                                        <div class="trust-badge text-primary">
+                                            <i class="bi bi-shield-check"></i>
+                                            <div class="small">Безопасно</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="trust-badge text-success">
+                                            <i class="bi bi-credit-card"></i>
+                                            <div class="small">Оплата онлайн</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="trust-badge text-warning">
+                                            <i class="bi bi-headset"></i>
+                                            <div class="small">Поддержка 24/7</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Контакты отеля -->
+                            <div class="card border-0 bg-light mt-4">
+                                <div class="card-body">
+                                    <h6 class="card-title">Контакты отеля</h6>
+                                    <p class="mb-2">
+                                        <i class="bi bi-telephone text-primary me-2"></i>
+                                        {{ hotel.phone|default:"+7 (495) 123-45-67" }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-envelope text-primary me-2"></i>
+                                        {{ hotel.email|default:"info@hotel.ru" }}
+                                    </p>
+                                    <p class="mb-0">
+                                        <i class="bi bi-geo-alt text-primary me-2"></i>
+                                        {{ hotel.location|default:"Москва, ул. Примерная, 123" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Смена изображения в галерее
+        function changeImage(thumb) {
+            const mainImage = document.getElementById('mainImage');
+            mainImage.src = thumb.src;
+
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+        }
+
+        // Валидация дат
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkIn = document.getElementById('checkIn');
+            const checkOut = document.getElementById('checkOut');
+
+            // Устанавливаем минимальную дату - сегодня
+            const today = new Date().toISOString().split('T')[0];
+            checkIn.min = today;
+            checkOut.min = today;
+
+            // Обновляем минимальную дату для выезда при изменении даты заезда
+            checkIn.addEventListener('change', function () {
+                checkOut.min = this.value;
+            });
+
+            // Обработка формы бронирования
+            document.getElementById('bookingForm').addEventListener('submit', function (e) {
+                if (!checkIn.value || !checkOut.value) {
+                    e.preventDefault();
+                    alert('Пожалуйста, выберите даты заезда и выезда');
+                    return;
+                }
+
+                if (new Date(checkOut.value) <= new Date(checkIn.value)) {
+                    e.preventDefault();
+                    alert('Дата выезда должна быть позже даты заезда');
+                    return;
+                }
+            });
+        });
+    </script>
+{% endblock %}

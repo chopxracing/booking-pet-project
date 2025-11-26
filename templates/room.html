@@ -1,0 +1,870 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <style>
+        .client-section {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            min-height: 100vh;
+            padding: 80px 0 40px;
+        }
+
+        .client-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .room-gallery {
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .room-gallery img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .room-gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .thumbnail-gallery {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail.active {
+            border-color: #ffc107;
+        }
+
+        .amenity-badge {
+            background: #ffc107;
+            color: #000;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+            color: #000;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            border-color: #ffc107;
+            transform: translateY(-5px);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffc107;
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .booking-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .booking-card:hover {
+            border-color: #ffc107;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            color: #ffc107;
+        }
+
+        .price-tag {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 12px 25px;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #ffc107;
+            border-bottom: 3px solid #ffc107;
+            background: transparent;
+        }
+
+        #hotelCarousel {
+            width: 780px !important; /* Устанавливаем вашу ширину */
+            height: 450px !important; /* Устанавливаем фиксированную высоту */
+            overflow: hidden;
+        }
+
+        /* 2. ПРИНУЖДАЕМ ВСЕ ВНУТРЕННИЕ КОНТЕЙНЕРЫ ЗАНЯТЬ 100% ВЫСОТЫ */
+        #hotelCarousel .carousel-inner,
+        #hotelCarousel .carousel-item {
+            width: 100% !important;
+            height: 100% !important; /* КЛЮЧЕВОЙ МОМЕНТ */
+            /* Добавляем фон, чтобы скрыть любые возможные пробелы, если изображение не заполняется идеально */
+            background-color: #000;
+        }
+
+        /* 3. ПРИНУЖДАЕМ ИЗОБРАЖЕНИЕ К ЗАПОЛНЕНИЮ И ОБРЕЗКЕ */
+        #hotelCarousel img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important; /* ГАРАНТИРУЕМ ОБРЕЗКУ */
+        }
+    </style>
+    <div>
+
+    </div>
+    <section class="client-section">
+        <div class="container">
+            <!-- Хлебные крошки -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'client' %}">Личный кабинет</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'rooms' hotel.id %}">Номера отеля {{ hotel.name }}</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ room.name }}</li>
+                </ol>
+            </nav>
+            {% if messages %}
+                <div class="container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <!-- Заголовок и действия -->
+            <div class="client-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-5 fw-bold mb-2">{{ room.name }}</h1>
+                        <p class="lead text-muted mb-3">Отель: {{ hotel.name }} • {{ hotel.city }}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal"
+                                    data-bs-target="#editRoomModal">
+                                <svg width="16" height="16" fill="currentColor" class="me-1">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                </svg>
+                                Редактировать
+                            </button>
+                            <button class="btn btn-primary" onclick="window.location.href='{% url 'rooms' hotel.id %}'">
+                                ← Назад к списку
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Статистика номера -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ room.bookings_count }}</div>
+                        <div class="stats-label">Всего бронирований</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ room.occupancy_rate }}%</div>
+                        <div class="stats-label">Заполняемость</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ room.monthly_revenue }} ₽</div>
+                        <div class="stats-label">Доход за месяц</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number">{{ room.average_rating|default:"-" }}</div>
+                        <div class="stats-label">Средний рейтинг</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Навигация -->
+            <ul class="nav nav-tabs mb-4" id="roomTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview"
+                            type="button" role="tab">
+                        📊 Обзор
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings"
+                            type="button" role="tab">
+                        📋 Бронирования
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings"
+                            type="button" role="tab">
+                        ⚙️ Настройки
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews"
+                            type="button" role="tab">
+                        💬 Отзывы
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Содержимое вкладок -->
+            <div class="tab-content" id="roomTabsContent">
+                <!-- Вкладка обзора -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="row">
+                        <!-- Галерея и основная информация -->
+                        <div class="col-md-8">
+                            <div class="client-card">
+                                <div id="hotelCarousel" class="carousel slide carousel-fixed-height"
+                                     data-bs-ride="carousel">
+
+                                    <div class="carousel-indicators">
+                                        <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="0"
+                                                class="active" aria-current="true" aria-label="Slide 1"></button>
+
+                                        {% for file in files %}
+                                            <button type="button" data-bs-target="#hotelCarousel"
+                                                    data-bs-slide-to="{{ forloop.counter }}"
+                                                    aria-label="Slide {{ forloop.counter|add:1 }}"></button>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="carousel-inner">
+                                        <div class="carousel-item active">
+                                                    <img src="{{ room.primary_photo.file.url }}"
+                                                 class="d-block"
+                                                 loading="eager"
+                                                 alt="{{ room.name }} - Основное фото">
+                                        </div>
+
+                                        {% for file in files %}
+                                            <div class="carousel-item">
+                                                <img src="{{ file.file.url }}"
+                                                     class="d-block"
+                                                     loading="lazy"
+                                                     alt="{{ room.name }} - Фото {{ forloop.counter|add:1 }}">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#hotelCarousel"
+                                            data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#hotelCarousel"
+                                            data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                </div>
+
+                                <h4 class="mt-4 mb-3">Описание номера</h4>
+                                <p class="mb-4">{{ room.description|default:"Просторный и комфортабельный номер с современным дизайном. Идеально подходит для деловых поездок и отдыха." }}</p>
+
+                                <h5 class="mb-3">Основные характеристики</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="feature-item">
+                                            <svg class="feature-icon" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                            </svg>
+                                            <span><strong>Вместимость:</strong> до {{ room.max_people }} гостей</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5 class="mt-4 mb-3">Удобства номера</h5>
+                                <div>
+                                    {% for comfort in room.comforts.all %}
+                                        <span class="amenity-badge">{{ comfort.name }}</span>
+                                    {% empty %}
+                                        <p class="text-muted">Удобства не указаны</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Боковая панель с ценами и действиями -->
+                        <div class="col-md-4">
+                            <div class="client-card">
+                                <h5 class="mb-3">Управление номером</h5>
+
+                                <div class="mb-4">
+                                    <div class="price-tag text-center">{{ room.price }} ₽</div>
+                                    <p class="text-muted text-center mb-3">за ночь</p>
+
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary" data-bs-toggle="modal"
+                                                data-bs-target="#priceModal">
+                                            Изменить цену
+                                        </button>
+                                        <button class="btn btn-outline-danger" data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal">
+                                            Удалить номер
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="border-top pt-3">
+                                    <h6>Быстрые действия</h6>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-secondary btn-sm">
+                                            📊 Смотреть статистику
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm">
+                                            📥 Экспорт данных
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm">
+                                            🖨️ Распечатать информацию
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- График заполняемости -->
+                            <div class="client-card mt-4">
+                                <h6 class="mb-3">Заполняемость за месяц</h6>
+                                <div class="bg-light rounded p-4 text-center">
+                                    <p class="text-muted">Здесь будет график заполняемости</p>
+                                    <small class="text-muted">Данные обновляются ежедневно</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка бронирований -->
+                <div class="tab-pane fade" id="bookings" role="tabpanel">
+                    <div class="client-card">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4>Бронирования номера</h4>
+                            <button class="btn btn-outline-primary btn-sm">
+                                📥 Экспорт в Excel
+                            </button>
+                        </div>
+
+                        {% if room.bookings.all %}
+                            {% for booking in room.bookings.all|slice:":10" %}
+                                <div class="booking-card">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <strong>{{ booking.guest_name }}</strong>
+                                            <div class="text-muted small">{{ booking.guest_email }}</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div>{{ booking.check_in }} - {{ booking.check_out }}</div>
+                                            <div class="text-muted small">{{ booking.nights }} ночей</div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="h6 text-success">{{ booking.total_price }} ₽</div>
+                                        </div>
+                                        <div class="col-md-2">
+                                        <span class="status-badge status-{{ booking.status }}">
+                                            {{ booking.get_status_display }}
+                                        </span>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <button class="btn btn-outline-primary btn-sm">Детали</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <p class="text-muted">Бронирования отсутствуют</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Вкладка настроек -->
+                <div class="tab-pane fade" id="settings" role="tabpanel">
+                    <div class="client-card">
+                        <h4 class="mb-4">Настройки номера</h4>
+                        <form method="post" action="">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Название номера</label>
+                                        <input type="text" class="form-control" name="name" value="{{ room.name }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Описание</label>
+                                        <textarea class="form-control" name="description"
+                                                  rows="4">{{ room.description }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Цена за ночь (₽)</label>
+                                        <input type="number" class="form-control" name="price" value="{{ room.price }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Максимум гостей</label>
+                                        <input type="number" class="form-control" name="max_people"
+                                               value="{{ room.max_people }}">
+                                    </div>
+                                    <div class="mb-3">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Вкладка отзывов -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    <div class="client-card">
+                        <h4 class="mb-4">Отзывы гостей</h4>
+
+                        {% if room.reviews.all %}
+                            {% for review in room.reviews.all %}
+                                <div class="booking-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>{{ review.guest_name }}</strong>
+                                            <div class="text-muted small">{{ review.created_at|date:"d.m.Y" }}</div>
+                                        </div>
+                                        <div class="text-warning">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <p class="mb-0">{{ review.comment }}</p>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <p class="text-muted">Отзывы отсутствуют</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Модальное окно добавления фото к номеру -->
+    <div class="modal fade" id="addRoomPhotoModal" tabindex="-1" aria-labelledby="addRoomPhotoModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRoomPhotoModalLabel">
+                        <svg width="24" height="24" fill="#ffc107" class="me-2">
+                            <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                            <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
+                        </svg>
+                        Добавить фотографии к номеру
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form method="post" action="{% url 'room_add_photo' room.id %}" enctype="multipart/form-data"
+                      id="roomPhotoForm">
+                    {% csrf_token %}
+
+                    <div class="modal-body">
+                        <!-- Прогресс загрузки -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <small class="text-muted">Выбрано: <span id="uploadCount">0</span> фото</small>
+                                <small class="text-muted">Максимум: 10 фото</small>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-warning" id="uploadProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Область загрузки файлов -->
+                        <div class="upload-area border-2 border-dashed rounded-3 p-5 text-center mb-4"
+                             id="uploadArea"
+                             style="border-style: dashed; border-color: #dee2e6; background: #f8f9fa; cursor: pointer;">
+                            <div id="uploadContent">
+                                <svg width="48" height="48" fill="#6c757d" class="mb-3">
+                                    <path d="M4.502 9a1.5 1.5 0 0 1 1.5-1.5h6a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 1-1.5-1.5V9z"/>
+                                    <path d="M14.002 6.5a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5V7a.5.5 0 0 1 .5-.5h6zm-4 4a.5.5 0 0 1 .5.5v1.5a.5.5 0 0 1-1 0V11a.5.5 0 0 1 .5-.5zm0 3a.5.5 0 0 1 .5.5v.5a.5.5 0 0 1-1 0v-.5a.5.5 0 0 1 .5-.5z"/>
+                                    <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
+                                </svg>
+                                <h5>Перетащите фото сюда</h5>
+                                <p class="text-muted mb-3">или нажмите для выбора файлов</p>
+                                <button type="button" class="btn btn-primary" id="selectFilesBtn">
+                                    Выбрать файлы
+                                </button>
+                                <div class="form-text mt-2">
+                                    Поддерживаемые форматы: JPG, PNG, WebP. Максимальный размер: 5MB
+                                </div>
+                            </div>
+
+                            <!-- Предпросмотр загруженных фото -->
+                            <div id="photoPreview" class="row g-3 mt-3 d-none">
+                                <h6 class="text-start">Выбранные фото:</h6>
+                                <div id="previewContainer" class="row g-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- Скрытый input для файлов -->
+                        <input type="file" id="photoFiles" name="photos" multiple
+                               accept="image/jpeg,image/png,image/webp"
+                               class="d-none">
+                        <input type="hidden" name="primary_photo_index" id="primaryPhotoInput" value="0">
+                        <input type="hidden" name="hotel_id" value="{{ hotel.id }}">
+                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                        <!-- Настройки фото -->
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">Настройки фотографий</h6>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Основное фото</label>
+                                        <select class="form-select" name="is_primary" id="primaryPhotoSelect" disabled>
+                                            <option value="">Выберите после загрузки</option>
+                                        </select>
+                                        <div class="form-text">Основное фото будет показано первым</div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <label class="form-label">Описание фото (опционально)</label>
+                                    <textarea class="form-control" name="description" rows="2"
+                                              placeholder="Краткое описание загружаемых фото..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Подсказки -->
+                        <div class="alert alert-light mt-4">
+                            <h6 class="alert-heading">💡 Советы по фото:</h6>
+                            <ul class="mb-0 small">
+                                <li>Используйте качественные фото высокого разрешения</li>
+                                <li>Сделайте фото при хорошем освещении</li>
+                                <li>Покажите разные ракурсы номера</li>
+                                <li>Рекомендуемый размер: 1200x800 пикселей</li>
+                                <li>Максимум 10 фото за одну загрузку</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+                            <svg width="16" height="16" fill="currentColor" class="me-1">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                            </svg>
+                            Загрузить фото
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка для открытия модального окна (добавьте в раздел быстрых действий) -->
+    <script>
+        // Добавьте эту кнопку в раздел "Быстрые действия" в боковой панели
+        document.querySelector('.border-top .d-grid').innerHTML += `
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRoomPhotoModal">
+                📷 Добавить фото
+            </button>
+        `;
+    </script>
+
+    <script>
+        // JavaScript для модального окна добавления фото
+        document.addEventListener('DOMContentLoaded', function () {
+            const photoFilesInput = document.getElementById('photoFiles');
+            const uploadArea = document.getElementById('uploadArea');
+            const previewContainer = document.getElementById('previewContainer');
+            const uploadCount = document.getElementById('uploadCount');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadContent = document.getElementById('uploadContent');
+            const photoPreview = document.getElementById('photoPreview');
+            const selectFilesBtn = document.getElementById('selectFilesBtn');
+
+            let selectedFiles = [];
+
+            // Обработчик выбора файлов
+            photoFilesInput.addEventListener('change', function (e) {
+                handleFiles(e.target.files);
+            });
+
+            // Кнопка выбора файлов
+            selectFilesBtn.addEventListener('click', function () {
+                photoFilesInput.click();
+            });
+
+            // Drag and Drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            uploadArea.addEventListener('drop', function (e) {
+                const dt = e.dataTransfer;
+                handleFiles(dt.files);
+            });
+
+            function handleFiles(files) {
+                selectedFiles = Array.from(files);
+
+                // Проверка количества файлов
+                if (selectedFiles.length > 10) {
+                    alert('Максимум можно загрузить 10 фото за раз');
+                    selectedFiles = selectedFiles.slice(0, 10);
+                }
+
+                updateInterface();
+                createPreviews();
+                updateFileInput();
+            }
+
+            function updateFileInput() {
+                const dataTransfer = new DataTransfer();
+                selectedFiles.forEach(file => dataTransfer.items.add(file));
+                photoFilesInput.files = dataTransfer.files;
+            }
+
+            function updateInterface() {
+                const count = selectedFiles.length;
+                const progress = (count / 10) * 100;
+
+                uploadCount.textContent = count;
+                uploadProgress.style.width = `${progress}%`;
+
+                // Изменение цвета прогресс-бара
+                if (count === 0) {
+                    uploadProgress.className = 'progress-bar bg-secondary';
+                    uploadArea.style.borderColor = '#dee2e6';
+                    uploadContent.classList.remove('d-none');
+                    photoPreview.classList.add('d-none');
+                } else if (count < 5) {
+                    uploadProgress.className = 'progress-bar bg-success';
+                    uploadArea.style.borderColor = '#198754';
+                    uploadContent.classList.add('d-none');
+                    photoPreview.classList.remove('d-none');
+                } else if (count < 8) {
+                    uploadProgress.className = 'progress-bar bg-warning';
+                    uploadArea.style.borderColor = '#ffc107';
+                    uploadContent.classList.add('d-none');
+                    photoPreview.classList.remove('d-none');
+                } else {
+                    uploadProgress.className = 'progress-bar bg-danger';
+                    uploadArea.style.borderColor = '#dc3545';
+                    uploadContent.classList.add('d-none');
+                    photoPreview.classList.remove('d-none');
+                }
+
+                // Активация кнопки загрузки
+                uploadBtn.disabled = count === 0;
+            }
+
+            function createPreviews() {
+                previewContainer.innerHTML = '';
+                const primaryInput = document.getElementById('primaryPhotoInput');
+
+                selectedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        const col = document.createElement('div');
+                        col.className = 'col-6 col-md-4 col-lg-3 mb-3';
+                        col.innerHTML = `
+                    <div class="position-relative">
+                        <img src="${e.target.result}" class="img-fluid rounded" style="height: 100px; object-fit: cover; width: 100%;">
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                                onclick="removePhoto(${index})" style="padding: 2px 6px;">
+                            ×
+                        </button>
+                        <div class="form-check position-absolute bottom-0 start-0 m-1">
+                            <input class="form-check-input primary-photo-radio" type="radio" name="primary_photo"
+                                   value="${index}" id="primary${index}" ${index === 0 ? 'checked' : ''}
+                                   onchange="updatePrimaryPhoto(${index})">
+                            <label class="form-check-label text-white" for="primary${index}" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
+                                Основное
+                            </label>
+                        </div>
+                    </div>
+                `;
+                        previewContainer.appendChild(col);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+
+                // Устанавливаем первое фото как основное по умолчанию
+                primaryInput.value = '0';
+            }
+
+            // Глобальная функция для обновления основного фото
+            window.updatePrimaryPhoto = function (index) {
+                document.getElementById('primaryPhotoInput').value = index;
+            };
+
+            // Глобальная функция для удаления фото
+            window.removePhoto = function (index) {
+                selectedFiles.splice(index, 1);
+                updateInterface();
+                createPreviews();
+                updateFileInput();
+            };
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function highlight() {
+                uploadArea.style.borderColor = '#ffc107';
+                uploadArea.style.backgroundColor = '#fffbf0';
+            }
+
+            function unhighlight() {
+                uploadArea.style.borderColor = '#dee2e6';
+                uploadArea.style.backgroundColor = '#f8f9fa';
+            }
+
+            // Обработчик отправки формы
+            document.getElementById('roomPhotoForm').addEventListener('submit', function (e) {
+                if (selectedFiles.length === 0) {
+                    e.preventDefault();
+                    alert('Пожалуйста, выберите хотя бы одно фото');
+                    return;
+                }
+
+                // Показ индикатора загрузки
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Загружаем...
+                `;
+            });
+
+            // Сброс при закрытии модального окна
+            document.getElementById('addRoomPhotoModal').addEventListener('hidden.bs.modal', function () {
+                selectedFiles = [];
+                photoFilesInput.value = '';
+                document.getElementById('roomPhotoForm').reset();
+                updateInterface();
+                previewContainer.innerHTML = '';
+
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = `
+                    <svg width="16" height="16" fill="currentColor" class="me-1">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    Загрузить фото
+                `;
+            });
+        });
+    </script>
+{% endblock %}
